@@ -44,6 +44,7 @@ export default function TimesliceScreen() {
               title={range}
               variant="outline"
               size="small"
+              onPress={() => {}}
               style={styles.optionButton}
             />
           ))}
@@ -60,6 +61,7 @@ export default function TimesliceScreen() {
               title={type}
               variant="outline"
               size="small"
+              onPress={() => {}}
               style={styles.optionButton}
             />
           ))}

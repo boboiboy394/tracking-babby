@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { TrackingRecord, RecordType, RecordData } from '../types';
+import type { TrackingRecord, RecordType, RecordData } from '../types';
 
 export const trackingService = {
   async getRecords(

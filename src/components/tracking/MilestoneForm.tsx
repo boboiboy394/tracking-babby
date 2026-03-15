@@ -7,7 +7,9 @@ import { Input } from '../common/Input';
 import { Card } from '../common/Card';
 import { colors } from '../../constants/colors';
 
-const MILESTONE_TYPES = [
+type MilestoneType = 'teeth' | 'crawl' | 'walk' | 'talk' | 'roll' | 'sit';
+
+const MILESTONE_TYPES: { key: MilestoneType; label: string; emoji: string }[] = [
   { key: 'teeth', label: '🦷 Mọc răng', emoji: '🦷' },
   { key: 'crawl', label: '🐛 Biết bò', emoji: '🐛' },
   { key: 'walk', label: '🚶 Biết đi', emoji: '🚶' },
@@ -17,7 +19,7 @@ const MILESTONE_TYPES = [
 ];
 
 export function MilestoneForm() {
-  const [milestoneType, setMilestoneType] = useState('');
+  const [milestoneType, setMilestoneType] = useState<MilestoneType | ''>('');
   const [description, setDescription] = useState('');
   const [loading, setLoading] = useState(false);
   const { selectedChild } = useChildStore();

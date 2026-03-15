@@ -1,5 +1,5 @@
 import { create } from 'zustand';
-import { Child } from '../types';
+import type { Child } from '../types';
 import { supabase } from '../services/supabase';
 import { useAuthStore } from './authStore';
 
@@ -82,7 +82,7 @@ export const useChildStore = create<ChildState>((set, get) => ({
     set({ children });
 
     if (get().selectedChild?.id === id) {
-      set({ selectedChild: { ...get().selectedChild, ...data } });
+      set({ selectedChild: { ...get().selectedChild!, ...data } as Child });
     }
   },
 

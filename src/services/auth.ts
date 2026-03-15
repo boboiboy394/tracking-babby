@@ -1,5 +1,5 @@
 import { supabase } from './supabase';
-import { Profile } from '../types';
+import type { Profile } from '../types';
 
 export interface AuthUser {
   id: string;
@@ -27,13 +27,9 @@ export const authService = {
     if (error) throw error;
     if (!data.user) throw new Error('Registration failed');
 
-    // Create profile
-    await supabase.from('profiles').insert({
-      id: data.user.id,
-      email,
-      full_name: full_name || null,
-      role: 'parent',
-    });
+    // Profile is automatically created by the trigger in the database
+    // Just wait a moment for trigger to complete
+    await new Promise(resolve => setTimeout(resolve, 500));
 
     return { id: data.user.id, email };
   },

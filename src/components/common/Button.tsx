@@ -6,6 +6,7 @@ import {
   ActivityIndicator,
   ViewStyle,
   TextStyle,
+  StyleProp,
 } from 'react-native';
 import { colors } from '../../constants/colors';
 
@@ -16,8 +17,8 @@ interface ButtonProps {
   size?: 'small' | 'medium' | 'large';
   disabled?: boolean;
   loading?: boolean;
-  style?: ViewStyle;
-  textStyle?: TextStyle;
+  style?: StyleProp<ViewStyle>;
+  textStyle?: StyleProp<TextStyle>;
 }
 
 export const Button: React.FC<ButtonProps> = ({
@@ -30,8 +31,8 @@ export const Button: React.FC<ButtonProps> = ({
   style,
   textStyle,
 }) => {
-  const getButtonStyle = () => {
-    const base = [styles.base, styles[size]];
+  const getButtonStyle = (): StyleProp<ViewStyle> => {
+    const base: StyleProp<ViewStyle>[] = [styles.base, styles[size]];
 
     switch (variant) {
       case 'secondary':
@@ -52,8 +53,8 @@ export const Button: React.FC<ButtonProps> = ({
     return base;
   };
 
-  const getTextStyle = () => {
-    const base = [styles.text, styles[`${size}Text`]];
+  const getTextStyle = (): StyleProp<TextStyle> => {
+    const base: StyleProp<TextStyle>[] = [styles.text, styles[`${size}Text` as keyof typeof styles] as StyleProp<TextStyle>];
 
     switch (variant) {
       case 'outline':

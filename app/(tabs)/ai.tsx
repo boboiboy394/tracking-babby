@@ -13,6 +13,7 @@ import { Card } from '../../src/components/common/Card';
 import { Button } from '../../src/components/common/Button';
 import { colors } from '../../src/constants/colors';
 import { differenceInMonths } from 'date-fns';
+import { RecordType } from '../../src/types';
 
 export default function AIScreen() {
   const { selectedChild } = useChildStore();
@@ -31,7 +32,7 @@ export default function AIScreen() {
 
     try {
       const records = await Promise.all(
-        selectedTypes.map(type => trackingService.getRecords(selectedChild.id, { type, limit: 30 }))
+        selectedTypes.map(type => trackingService.getRecords(selectedChild.id, { type: type as RecordType, limit: 30 }))
       );
 
       const allRecords = records.flat();
