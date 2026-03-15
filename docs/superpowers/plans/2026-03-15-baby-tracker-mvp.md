@@ -2336,6 +2336,1580 @@ Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
 
 ---
 
-*Plan continues with Chunk 2 (Core Tracking), Chunk 3 (AI Features), Chunk 4 (Polish)*
+### Task 2.2: Create Tracking Screen with Forms
+
+**Files:**
+- Create: `app/(tabs)/tracking.tsx`
+- Create: `src/components/tracking/FeedingForm.tsx`
+- Create: `src/components/tracking/GrowthForm.tsx`
+- Create: `src/components/tracking/MilestoneForm.tsx`
+- Create: `src/components/tracking/VaccinationForm.tsx`
+
+- [ ] **Step 1: Create FeedingForm.tsx**
+
+```typescript
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useChildStore } from '../../stores/childStore';
+import { trackingService } from '../../services/tracking';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
+import { Card } from '../common/Card';
+import { colors } from '../../constants/colors';
+
+type FeedingType = 'milk' | 'porridge' | 'solid';
+
+export function FeedingForm() {
+  const [type, setType] = useState<FeedingType>('milk');
+  const [amount, setAmount] = useState('');
+  const [times, setTimes] = useState('1');
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { selectedChild } = useChildStore();
+
+  const handleSubmit = async () => {
+    if (!selectedChild) return;
+    setLoading(true);
+    try {
+      await trackingService.addRecord(
+        selectedChild.id,
+        'feeding',
+        {
+          type,
+          amount_ml: type === 'milk' ? parseInt(amount) : undefined,
+          times: parseInt(times),
+        },
+        notes
+      );
+      // Reset form
+      setAmount('');
+      setTimes('1');
+      setNotes('');
+      alert('Đã lưu thành công!');
+    } catch (error) {
+      alert('Lỗi: ' + (error as Error).message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      <Card style={styles.card}>
+        <Text style={styles.label}>Loại thức ăn</Text>
+        <View style={styles.typeSelector}>
+          {(['milk', 'porridge', 'solid'] as FeedingType[]).map((t) => (
+            <Button
+              key={t}
+              title={t === 'milk' ? '🍼 Sữa' : t === 'porridge' ? '🍲 Cháo' : '🍚 Ăn cơm'}
+              variant={type === t ? 'primary' : 'outline'}
+              onPress={() => setType(t)}
+              style={styles.typeButton}
+            />
+          ))}
+        </View>
+
+        {type === 'milk' && (
+          <Input
+            label="Số ml"
+            placeholder="120"
+            value={amount}
+            onChangeText={setAmount}
+            keyboardType="numeric"
+          />
+        )}
+
+        <Input
+          label="Số lần trong ngày"
+          placeholder="1"
+          value={times}
+          onChangeText={setTimes}
+          keyboardType="numeric"
+        />
+
+        <Input
+          label="Ghi chú (tùy chọn)"
+          placeholder="Bé bú ít hơn bình thường..."
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+        />
+
+        <Button
+          title="💾 Lưu"
+          onPress={handleSubmit}
+          loading={loading}
+          style={styles.submitButton}
+        />
+      </Card>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  card: { margin: 16 },
+  label: { fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 12 },
+  typeSelector: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  typeButton: { flex: 1 },
+  submitButton: { marginTop: 16 },
+});
+```
+
+- [ ] **Step 2: Create GrowthForm.tsx**
+
+```typescript
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useChildStore } from '../../stores/childStore';
+import { trackingService } from '../../services/tracking';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
+import { Card } from '../common/Card';
+import { colors } from '../../constants/colors';
+
+export function GrowthForm() {
+  const [height, setHeight] = useState('');
+  const [weight, setWeight] = useState('');
+  const [head, setHead] = useState('');
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { selectedChild } = useChildStore();
+
+  const handleSubmit = async () => {
+    if (!selectedChild) return;
+    setLoading(true);
+    try {
+      await trackingService.addRecord(
+        selectedChild.id,
+        'growth',
+        {
+          height_cm: parseFloat(height),
+          weight_kg: parseFloat(weight),
+          head_circumference_cm: head ? parseFloat(head) : undefined,
+        },
+        notes
+      );
+      setHeight('');
+      setWeight('');
+      setHead('');
+      setNotes('');
+      alert('Đã lưu thành công!');
+    } catch (error) {
+      alert('Lỗi: ' + (error as Error).message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      <Card style={styles.card}>
+        <Input
+          label="Chiều cao (cm)"
+          placeholder="75"
+          value={height}
+          onChangeText={setHeight}
+          keyboardType="numeric"
+        />
+        <Input
+          label="Cân nặng (kg)"
+          placeholder="10.5"
+          value={weight}
+          onChangeText={setWeight}
+          keyboardType="numeric"
+        />
+        <Input
+          label="Vòng đầu (cm) - tùy chọn"
+          placeholder="45"
+          value={head}
+          onChangeText={setHead}
+          keyboardType="numeric"
+        />
+        <Input
+          label="Ghi chú"
+          placeholder="..."
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+        />
+        <Button
+          title="💾 Lưu"
+          onPress={handleSubmit}
+          loading={loading}
+          style={styles.submitButton}
+        />
+      </Card>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  card: { margin: 16 },
+  submitButton: { marginTop: 16 },
+});
+```
+
+- [ ] **Step 3: Create MilestoneForm.tsx**
+
+```typescript
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useChildStore } from '../../stores/childStore';
+import { trackingService } from '../../services/tracking';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
+import { Card } from '../common/Card';
+import { colors } from '../../constants/colors';
+
+const MILESTONE_TYPES = [
+  { key: 'teeth', label: '🦷 Mọc răng', emoji: '🦷' },
+  { key: 'crawl', label: '🐛 Biết bò', emoji: '🐛' },
+  { key: 'walk', label: '🚶 Biết đi', emoji: '🚶' },
+  { key: 'talk', label: '🗣️ Biết nói', emoji: '🗣️' },
+  { key: 'roll', label: '🔄 Lăn', emoji: '🔄' },
+  { key: 'sit', label: '🪑 Biết ngồi', emoji: '🪑' },
+];
+
+export function MilestoneForm() {
+  const [milestoneType, setMilestoneType] = useState('');
+  const [description, setDescription] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { selectedChild } = useChildStore();
+
+  const handleSubmit = async () => {
+    if (!selectedChild || !milestoneType) return;
+    setLoading(true);
+    try {
+      await trackingService.addRecord(
+        selectedChild.id,
+        'milestone',
+        {
+          milestone_type: milestoneType,
+          description,
+        },
+        description
+      );
+      setMilestoneType('');
+      setDescription('');
+      alert('Đã lưu thành công!');
+    } catch (error) {
+      alert('Lỗi: ' + (error as Error).message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      <Card style={styles.card}>
+        <Text style={styles.label}>Chọn mốc phát triển</Text>
+        <View style={styles.typeGrid}>
+          {MILESTONE_TYPES.map((m) => (
+            <Button
+              key={m.key}
+              title={`${m.emoji} ${m.label}`}
+              variant={milestoneType === m.key ? 'primary' : 'outline'}
+              onPress={() => setMilestoneType(m.key)}
+              style={styles.typeButton}
+            />
+          ))}
+        </View>
+        <Input
+          label="Mô tả thêm"
+          placeholder="Ngày bé bắt đầu..."
+          value={description}
+          onChangeText={setDescription}
+          multiline
+        />
+        <Button
+          title="💾 Lưu"
+          onPress={handleSubmit}
+          loading={loading}
+          disabled={!milestoneType}
+          style={styles.submitButton}
+        />
+      </Card>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  card: { margin: 16 },
+  label: { fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 12 },
+  typeGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  typeButton: { width: '47%' },
+  submitButton: { marginTop: 16 },
+});
+```
+
+- [ ] **Step 4: Create VaccinationForm.tsx**
+
+```typescript
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { useChildStore } from '../../stores/childStore';
+import { trackingService } from '../../services/tracking';
+import { Button } from '../common/Button';
+import { Input } from '../common/Input';
+import { Card } from '../common/Card';
+import { colors } from '../../constants/colors';
+
+const VACCINES = [
+  'Vaccine 5 bệnh (COMBO 5)',
+  'Vaccine 6 bệnh (COMBO 6)',
+  'Vaccine Cúm',
+  'Vaccine COVID-19',
+  'Vaccine Thương hàn',
+  'Vaccine Viêm gan B',
+  'Vaccine Viêm não Nhật Bản',
+  'Khác',
+];
+
+export function VaccinationForm() {
+  const [vaccineName, setVaccineName] = useState(VACCINES[0]);
+  const [doseNumber, setDoseNumber] = useState('1');
+  const [notes, setNotes] = useState('');
+  const [loading, setLoading] = useState(false);
+  const { selectedChild } = useChildStore();
+
+  const handleSubmit = async () => {
+    if (!selectedChild) return;
+    setLoading(true);
+    try {
+      await trackingService.addRecord(
+        selectedChild.id,
+        'vaccination',
+        {
+          vaccine_name: vaccineName,
+          dose_number: parseInt(doseNumber),
+          date: new Date().toISOString(),
+        },
+        notes
+      );
+      setDoseNumber('1');
+      setNotes('');
+      alert('Đã lưu thành công!');
+    } catch (error) {
+      alert('Lỗi: ' + (error as Error).message);
+    }
+    setLoading(false);
+  };
+
+  return (
+    <ScrollView style={styles.container}>
+      <Card style={styles.card}>
+        <Text style={styles.label}>Tên vaccine</Text>
+        <View style={styles.vaccineList}>
+          {VACCINES.map((v) => (
+            <Button
+              key={v}
+              title={v}
+              variant={vaccineName === v ? 'primary' : 'outline'}
+              onPress={() => setVaccineName(v)}
+              style={styles.vaccineButton}
+              size="small"
+            />
+          ))}
+        </View>
+        <Input
+          label="Mũi thứ"
+          placeholder="1"
+          value={doseNumber}
+          onChangeText={setDoseNumber}
+          keyboardType="numeric"
+        />
+        <Input
+          label="Ghi chú"
+          placeholder="Phản ứng sau tiêm..."
+          value={notes}
+          onChangeText={setNotes}
+          multiline
+        />
+        <Button
+          title="💾 Lưu"
+          onPress={handleSubmit}
+          loading={loading}
+          style={styles.submitButton}
+        />
+      </Card>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  card: { margin: 16 },
+  label: { fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 12 },
+  vaccineList: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 16 },
+  vaccineButton: { marginBottom: 4 },
+  submitButton: { marginTop: 16 },
+});
+```
+
+- [ ] **Step 5: Create TrackingScreen with tabs**
+
+```typescript
+import React, { useState } from 'react';
+import { View, Text, StyleSheet, ScrollView } from 'react-native';
+import { FeedingForm } from '../components/tracking/FeedingForm';
+import { GrowthForm } from '../components/tracking/GrowthForm';
+import { MilestoneForm } from '../components/tracking/MilestoneForm';
+import { VaccinationForm } from '../components/tracking/VaccinationForm';
+import { Button } from '../components/common/Button';
+import { colors } from '../constants/colors';
+
+type TabType = 'feeding' | 'growth' | 'milestone' | 'vaccination';
+
+const TABS: { key: TabType; label: string; emoji: string }[] = [
+  { key: 'feeding', label: 'Sữa/Ăn', emoji: '🍼' },
+  { key: 'growth', label: 'Cao/Cân', emoji: '📏' },
+  { key: 'milestone', label: 'Mốc', emoji: '🎯' },
+  { key: 'vaccination', label: 'Tiêm', emoji: '💉' },
+];
+
+export default function TrackingScreen() {
+  const [activeTab, setActiveTab] = useState<TabType>('feeding');
+
+  const renderForm = () => {
+    switch (activeTab) {
+      case 'feeding': return <FeedingForm />;
+      case 'growth': return <GrowthForm />;
+      case 'milestone': return <MilestoneForm />;
+      case 'vaccination': return <VaccinationForm />;
+    }
+  };
+
+  return (
+    <View style={styles.container}>
+      <View style={styles.header}>
+        <Text style={styles.title}>➕ Thêm mới</Text>
+      </View>
+      <View style={styles.tabs}>
+        {TABS.map((tab) => (
+          <Button
+            key={tab.key}
+            title={`${tab.emoji} ${tab.label}`}
+            variant={activeTab === tab.key ? 'primary' : 'ghost'}
+            size="small"
+            onPress={() => setActiveTab(tab.key)}
+            style={styles.tab}
+          />
+        ))}
+      </View>
+      {renderForm()}
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background, paddingTop: 50 },
+  header: { padding: 16 },
+  title: { fontSize: 24, fontWeight: '700', color: colors.text },
+  tabs: { flexDirection: 'row', paddingHorizontal: 16, gap: 8, marginBottom: 8 },
+  tab: { flex: 1 },
+});
+```
+
+- [ ] **Step 6: Commit**
+
+```bash
+git add src/components/tracking/ app/\(tabs\)/tracking.tsx
+git commit -m "feat: add tracking forms and screen
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 2.3: Create AI Service
+
+**Files:**
+- Create: `src/services/ai.ts`
+
+- [ ] **Step 1: Create AI service with Groq**
+
+```typescript
+import { config } from '../constants/config';
+
+const GROQ_API_URL = 'https://api.groq.com/openai/v1/chat/completions';
+
+interface GroqMessage {
+  role: 'system' | 'user' | 'assistant';
+  content: string;
+}
+
+export interface AIAnalysisResult {
+  summary: string;
+  growth_assessment: string;
+  feeding_insights: string;
+  recommendations: string[];
+  alerts: string[];
+}
+
+export const aiService = {
+  async analyzeChildData(
+    childAge: number,
+    childGender: string,
+    records: unknown[]
+  ): Promise<AIAnalysisResult> {
+    const systemPrompt = `Bạn là một trợ lý AI chăm sóc trẻ em. Phân tích dữ liệu theo dõi của trẻ và đưa ra lời khuyên bằng tiếng Việt. Hãy quan tâm, chuyên nghiệp. Luôn nhắc nhở phụ huynh tham khảo ý kiến bác sĩ cho các vấn đề nghiêm trọng.`;
+
+    const userPrompt = `Phân tích dữ liệu theo dõi cho trẻ ${childAge} tháng tuổi, giới tính ${childGender}.
+
+Dữ liệu theo dõi:
+${JSON.stringify(records, null, 2)}
+
+Hãy phân tích và đưa ra:
+1. Tóm tắt tổng quát
+2. Đánh giá tăng trưởng
+3. Nhận xét về chế độ ăn
+4. Khuyến nghị (nếu có)
+5. Cảnh báo (nếu có)
+
+Trả lời theo format JSON:
+{
+  "summary": "...",
+  "growth_assessment": "...",
+  "feeding_insights": "...",
+  "recommendations": ["...", "..."],
+  "alerts": ["...", "..."]
+}`;
+
+    try {
+      const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.groq.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: config.groq.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            { role: 'user', content: userPrompt },
+          ],
+          temperature: 0.7,
+          max_tokens: 2048,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Groq API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      const content = data.choices?.[0]?.message?.content;
+
+      // Parse JSON from response
+      try {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        if (jsonMatch) {
+          return JSON.parse(jsonMatch[0]);
+        }
+      } catch {
+        // If parsing fails, return the content as summary
+      }
+
+      return {
+        summary: content || 'Không thể phân tích',
+        growth_assessment: '',
+        feeding_insights: '',
+        recommendations: [],
+        alerts: [],
+      };
+    } catch (error) {
+      console.error('AI analysis error:', error);
+      throw error;
+    }
+  },
+
+  async chatWithDoctor(
+    messages: { role: string; content: string }[],
+    childAge?: number
+  ): Promise<string> {
+    const systemPrompt = `Bạn là Dr. Baby - trợ lý bác sĩ nhi khoa. Bạn cung cấp hướng dẫn sức khỏe chung cho trẻ dưới 5 tuổi. Luôn nhắc nhở người dùng tham khảo ý kiến bác sĩ thực cho các vấn đề nghiêm trọng. Trả lời bằng tiếng Việt, quan tâm và chuyên nghiệp.`;
+
+    const history = messages.map(m => ({
+      role: m.role === 'user' ? 'user' as const : 'assistant' as const,
+      content: m.content,
+    }));
+
+    try {
+      const response = await fetch(GROQ_API_URL, {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${config.groq.apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: config.groq.model,
+          messages: [
+            { role: 'system', content: systemPrompt },
+            ...history,
+          ],
+          temperature: 0.7,
+          max_tokens: 1024,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error(`Groq API error: ${response.status}`);
+      }
+
+      const data = await response.json();
+      return data.choices?.[0]?.message?.content || 'Xin lỗi, tôi không thể trả lời lúc này.';
+    } catch (error) {
+      console.error('AI chat error:', error);
+      throw error;
+    }
+  },
+};
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/services/ai.ts
+git commit -m "feat: add AI service with Groq API integration
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+```
+
+---
+
+## Chunk 3: AI Features
+
+### Task 3.1: Create AI Analysis Screen
+
+**Files:**
+- Create: `app/(tabs)/ai.tsx`
+
+- [ ] **Step 1: Create AI Analysis Screen**
+
+```typescript
+import React, { useState, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  ActivityIndicator,
+} from 'react-native';
+import { useChildStore } from '../../src/stores/childStore';
+import { trackingService } from '../../src/services/tracking';
+import { aiService, AIAnalysisResult } from '../../src/services/ai';
+import { Card } from '../../src/components/common/Card';
+import { Button } from '../../src/components/common/Button';
+import { colors } from '../../src/constants/colors';
+import { differenceInMonths } from 'date-fns';
+
+export default function AIScreen() {
+  const { selectedChild } = useChildStore();
+  const [loading, setLoading] = useState(false);
+  const [result, setResult] = useState<AIAnalysisResult | null>(null);
+  const [selectedTypes, setSelectedTypes] = useState<string[]>(['growth', 'feeding']);
+
+  const childAge = selectedChild
+    ? differenceInMonths(new Date(), new Date(selectedChild.birth_date))
+    : 0;
+
+  const handleAnalyze = async () => {
+    if (!selectedChild) return;
+    setLoading(true);
+    setResult(null);
+
+    try {
+      const records = await Promise.all(
+        selectedTypes.map(type => trackingService.getRecords(selectedChild.id, { type, limit: 30 }))
+      );
+
+      const allRecords = records.flat();
+      const analysis = await aiService.analyzeChildData(
+        childAge,
+        selectedChild.gender || 'unknown',
+        allRecords
+      );
+
+      setResult(analysis);
+    } catch (error) {
+      alert('Lỗi: ' + (error as Error).message);
+    }
+
+    setLoading(false);
+  };
+
+  const toggleType = (type: string) => {
+    setSelectedTypes(prev =>
+      prev.includes(type)
+        ? prev.filter(t => t !== type)
+        : [...prev, type]
+    );
+  };
+
+  if (!selectedChild) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.noChild}>Vui lòng thêm bé trước</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>🤖 AI Phân tích</Text>
+      <Text style={styles.subtitle}>
+        Bé {selectedChild.name} - {childAge} tháng tuổi
+      </Text>
+
+      {/* Data Type Selection */}
+      <Card style={styles.filterCard}>
+        <Text style={styles.filterTitle}>Chọn loại dữ liệu:</Text>
+        <View style={styles.filters}>
+          {['growth', 'feeding', 'milestone', 'vaccination'].map(type => (
+            <Button
+              key={type}
+              title={type === 'growth' ? '📏 Tăng trưởng'
+                : type === 'feeding' ? '🍼 Chế độ ăn'
+                : type === 'milestone' ? '🎯 Mốc phát triển'
+                : '💉 Tiêm phòng'}
+              variant={selectedTypes.includes(type) ? 'primary' : 'outline'}
+              size="small"
+              onPress={() => toggleType(type)}
+              style={styles.filterButton}
+            />
+          ))}
+        </View>
+      </Card>
+
+      {/* Analyze Button */}
+      <Button
+        title={loading ? 'Đang phân tích...' : '🔍 Phân tích'}
+        onPress={handleAnalyze}
+        loading={loading}
+        style={styles.analyzeButton}
+      />
+
+      {/* Loading State */}
+      {loading && (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size="large" color={colors.primary} />
+          <Text style={styles.loadingText}>AI đang phân tích dữ liệu...</Text>
+        </View>
+      )}
+
+      {/* Results */}
+      {result && (
+        <Card style={styles.resultCard}>
+          <Text style={styles.resultTitle}>📊 Kết quả phân tích</Text>
+
+          {result.summary && (
+            <View style={styles.resultSection}>
+              <Text style={styles.sectionLabel}>Tóm tắt</Text>
+              <Text style={styles.sectionText}>{result.summary}</Text>
+            </View>
+          )}
+
+          {result.growth_assessment && (
+            <View style={styles.resultSection}>
+              <Text style={styles.sectionLabel}>📈 Đánh giá tăng trưởng</Text>
+              <Text style={styles.sectionText}>{result.growth_assessment}</Text>
+            </View>
+          )}
+
+          {result.feeding_insights && (
+            <View style={styles.resultSection}>
+              <Text style={styles.sectionLabel}>🍼 Chế độ ăn</Text>
+              <Text style={styles.sectionText}>{result.feeding_insights}</Text>
+            </View>
+          )}
+
+          {result.recommendations.length > 0 && (
+            <View style={styles.resultSection}>
+              <Text style={styles.sectionLabel}>💡 Khuyến nghị</Text>
+              {result.recommendations.map((rec, i) => (
+                <Text key={i} style={styles.listItem}>• {rec}</Text>
+              ))}
+            </View>
+          )}
+
+          {result.alerts.length > 0 && (
+            <View style={[styles.resultSection, styles.alertSection]}>
+              <Text style={styles.alertLabel}>⚠️ Cảnh báo</Text>
+              {result.alerts.map((alert, i) => (
+                <Text key={i} style={styles.alertItem}>• {alert}</Text>
+              ))}
+            </View>
+          )}
+
+          <Button
+            title="💬 Chat với Bác sĩ AI"
+            variant="secondary"
+            onPress={() => {/* Navigate to chat */}}
+            style={styles.chatButton}
+          />
+        </Card>
+      )}
+
+      {/* Disclaimer */}
+      <Text style={styles.disclaimer}>
+        ⚠️ Lưu ý: Đây chỉ là tư vấn từ AI, không thay thế chẩn đoán y khoa.
+        Hãy tham khảo bác sĩ cho các vấn đề sức khỏe.
+      </Text>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: 20, paddingTop: 60 },
+  title: { fontSize: 24, fontWeight: '700', color: colors.text },
+  subtitle: { fontSize: 14, color: colors.textLight, marginTop: 4, marginBottom: 20 },
+  noChild: { textAlign: 'center', marginTop: 100, color: colors.textLight },
+  filterCard: { marginBottom: 16 },
+  filterTitle: { fontSize: 14, fontWeight: '600', marginBottom: 12 },
+  filters: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  filterButton: { marginBottom: 4 },
+  analyzeButton: { marginBottom: 20 },
+  loadingContainer: { alignItems: 'center', padding: 40 },
+  loadingText: { marginTop: 12, color: colors.textLight },
+  resultCard: { marginBottom: 16 },
+  resultTitle: { fontSize: 18, fontWeight: '600', marginBottom: 16 },
+  resultSection: { marginBottom: 16 },
+  sectionLabel: { fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 8 },
+  sectionText: { fontSize: 14, color: colors.textLight, lineHeight: 22 },
+  listItem: { fontSize: 14, color: colors.text, marginLeft: 8, marginBottom: 4 },
+  alertSection: { backgroundColor: '#FFF3CD', padding: 12, borderRadius: 8 },
+  alertLabel: { fontSize: 14, fontWeight: '600', color: '#856404', marginBottom: 8 },
+  alertItem: { fontSize: 14, color: '#856404', marginLeft: 8 },
+  chatButton: { marginTop: 16 },
+  disclaimer: { fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 16 },
+});
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add app/\(tabs\)/ai.tsx
+git commit -m "feat: add AI analysis screen
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 3.2: Create AI Chat Screen
+
+**Files:**
+- Create: `app/(tabs)/chat.tsx`
+
+- [ ] **Step 1: Create Chat Screen**
+
+```typescript
+import React, { useState, useRef, useEffect } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  FlatList,
+  TextInput,
+  TouchableOpacity,
+  KeyboardAvoidingView,
+  Platform,
+} from 'react-native';
+import { useChildStore } from '../../src/stores/childStore';
+import { aiService } from '../../src/services/ai';
+import { colors } from '../../src/constants/colors';
+import { differenceInMonths } from 'date-fns';
+
+interface Message {
+  id: string;
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+const QUICK_QUESTIONS = [
+  '🤱 Chế độ ăn của bé',
+  '😴 Giấc ngủ bé',
+  '🦷 Mọc răng',
+  '💉 Tiêm phòng',
+  '📈 Tăng trưởng',
+];
+
+export default function ChatScreen() {
+  const { selectedChild } = useChildStore();
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const flatListRef = useRef<FlatList>(null);
+
+  const childAge = selectedChild
+    ? differenceInMonths(new Date(), new Date(selectedChild.birth_date))
+    : 0;
+
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
+
+    const userMessage: Message = {
+      id: Date.now().toString(),
+      role: 'user',
+      content: input.trim(),
+    };
+
+    setMessages(prev => [...prev, userMessage]);
+    setInput('');
+    setLoading(true);
+
+    try {
+      const response = await aiService.chatWithDoctor(
+        [...messages, userMessage],
+        childAge
+      );
+
+      const assistantMessage: Message = {
+        id: (Date.now() + 1).toString(),
+        role: 'assistant',
+        content: response,
+      };
+
+      setMessages(prev => [...prev, assistantMessage]);
+    } catch (error) {
+      alert('Lỗi: ' + (error as Error).message);
+    }
+
+    setLoading(false);
+  };
+
+  const handleQuickQuestion = (question: string) => {
+    setInput(question);
+  };
+
+  const renderMessage = ({ item }: { item: Message }) => (
+    <View style={[
+      styles.messageContainer,
+      item.role === 'user' ? styles.userMessage : styles.assistantMessage
+    ]}>
+      <View style={styles.messageBubble}>
+        <Text style={[
+          styles.messageText,
+          item.role === 'user' && styles.userText
+        ]}>
+          {item.content}
+        </Text>
+      </View>
+    </View>
+  );
+
+  return (
+    <KeyboardAvoidingView
+      style={styles.container}
+      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      keyboardVerticalOffset={90}
+    >
+      <View style={styles.header}>
+        <Text style={styles.title}>🤖 Bác sĩ AI</Text>
+      </View>
+
+      {selectedChild ? (
+        <>
+          {/* Quick Questions */}
+          <View style={styles.quickQuestions}>
+            <FlatList
+              horizontal
+              data={QUICK_QUESTIONS}
+              keyExtractor={item => item}
+              showsHorizontalScrollIndicator={false}
+              renderItem={({ item }) => (
+                <TouchableOpacity
+                  style={styles.quickButton}
+                  onPress={() => handleQuickQuestion(item)}
+                >
+                  <Text style={styles.quickText}>{item}</Text>
+                </TouchableOpacity>
+              )}
+            />
+          </View>
+
+          {/* Messages */}
+          <FlatList
+            ref={flatListRef}
+            data={messages}
+            keyExtractor={item => item.id}
+            renderItem={renderMessage}
+            contentContainerStyle={styles.messagesList}
+            onContentSizeChange={() => flatListRef.current?.scrollToEnd()}
+          />
+
+          {/* Input */}
+          <View style={styles.inputContainer}>
+            <TextInput
+              style={styles.input}
+              value={input}
+              onChangeText={setInput}
+              placeholder="Nhập tin nhắn..."
+              placeholderTextColor={colors.textMuted}
+              multiline
+              maxLength={500}
+            />
+            <TouchableOpacity
+              style={[styles.sendButton, (!input.trim() || loading) && styles.sendButtonDisabled]}
+              onPress={handleSend}
+              disabled={!input.trim() || loading}
+            >
+              <Text style={styles.sendText}>➤</Text>
+            </TouchableOpacity>
+          </View>
+
+          {/* Disclaimer */}
+          <Text style={styles.disclaimer}>
+            ⚠️ Đây chỉ là tư vấn, không thay thế chẩn đoán y khoa
+          </Text>
+        </>
+      ) : (
+        <View style={styles.noChild}>
+          <Text style={styles.noChildText}>Vui lòng thêm bé trước</Text>
+        </View>
+      )}
+    </KeyboardAvoidingView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  header: { padding: 16, paddingTop: 50 },
+  title: { fontSize: 24, fontWeight: '700', color: colors.text },
+  quickQuestions: { paddingHorizontal: 16, paddingBottom: 8 },
+  quickButton: { backgroundColor: colors.surface, paddingHorizontal: 12, paddingVertical: 8, borderRadius: 20, marginRight: 8 },
+  quickText: { fontSize: 12, color: colors.primary },
+  messagesList: { padding: 16, paddingBottom: 8 },
+  messageContainer: { marginBottom: 12 },
+  userMessage: { alignItems: 'flex-end' },
+  assistantMessage: { alignItems: 'flex-start' },
+  messageBubble: { maxWidth: '80%', padding: 12, borderRadius: 16 },
+  userMessage: { backgroundColor: colors.primary },
+  assistantMessage: { backgroundColor: colors.surface },
+  messageText: { fontSize: 14, color: colors.text, lineHeight: 20 },
+  userText: { color: colors.white },
+  inputContainer: { flexDirection: 'row', padding: 12, backgroundColor: colors.surface, alignItems: 'flex-end' },
+  input: { flex: 1, backgroundColor: colors.background, borderRadius: 20, paddingHorizontal: 16, paddingVertical: 10, maxHeight: 100, fontSize: 14 },
+  sendButton: { width: 44, height: 44, borderRadius: 22, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center', marginLeft: 8 },
+  sendButtonDisabled: { opacity: 0.5 },
+  sendText: { fontSize: 20, color: colors.white },
+  disclaimer: { fontSize: 10, color: colors.textMuted, textAlign: 'center', paddingBottom: 8 },
+  noChild: { flex: 1, alignItems: 'center', justifyContent: 'center' },
+  noChildText: { color: colors.textLight },
+});
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add app/\(tabs\)/chat.tsx
+git commit -m "feat: add AI chat screen
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+```
+
+---
+
+## Chunk 4: Polish & Timeslice
+
+### Task 4.1: Create Timeslice Screen
+
+**Files:**
+- Create: `app/(tabs)/timeslice.tsx`
+
+- [ ] **Step 1: Create basic Timeslice Screen**
+
+```typescript
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  Image,
+  TouchableOpacity,
+} from 'react-native';
+import { useChildStore } from '../../src/stores/childStore';
+import { Card } from '../../src/components/common/Card';
+import { Button } from '../../src/components/common/Button';
+import { colors } from '../../src/constants/colors';
+
+export default function TimesliceScreen() {
+  const { selectedChild } = useChildStore();
+  const [selectedImages, setSelectedImages] = useState<string[]>([]);
+  const [style, setStyle] = useState<'modern' | 'vintage'>('modern');
+
+  // This would integrate with actual video generation in production
+  const handleGenerate = () => {
+    alert('Tính năng đang được phát triển! Video sẽ được tạo từ các ảnh đã chọn.');
+  };
+
+  if (!selectedChild) {
+    return (
+      <View style={styles.container}>
+        <Text style={styles.noChild}>Vui lòng thêm bé trước</Text>
+      </View>
+    );
+  }
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>🎬 Tạo Timeslice</Text>
+      <Text style={styles.subtitle}>Tạo video kỷ niệm từ ảnh bé</Text>
+
+      {/* Time Range */}
+      <Card style={styles.card}>
+        <Text style={styles.label}>Chọn thời gian</Text>
+        <View style={styles.options}>
+          {['1 tháng', '3 tháng', '6 tháng', '1 năm'].map((range) => (
+            <Button
+              key={range}
+              title={range}
+              variant="outline"
+              size="small"
+              style={styles.optionButton}
+            />
+          ))}
+        </View>
+      </Card>
+
+      {/* Milestone Filter */}
+      <Card style={styles.card}>
+        <Text style={styles.label}>Chọn loại khoảnh khắc</Text>
+        <View style={styles.options}>
+          {['Mọc răng', 'Cười chơi', 'Ăn uống', 'Tập đi', 'Tất cả'].map((type) => (
+            <Button
+              key={type}
+              title={type}
+              variant="outline"
+              size="small"
+              style={styles.optionButton}
+            />
+          ))}
+        </View>
+      </Card>
+
+      {/* Style Selection */}
+      <Card style={styles.card}>
+        <Text style={styles.label}>Style video</Text>
+        <View style={styles.styleOptions}>
+          <TouchableOpacity
+            style={[styles.styleButton, style === 'modern' && styles.styleActive]}
+            onPress={() => setStyle('modern')}
+          >
+            <Text style={styles.styleEmoji}>✨</Text>
+            <Text style={styles.styleText}>Modern</Text>
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={[styles.styleButton, style === 'vintage' && styles.styleActive]}
+            onPress={() => setStyle('vintage')}
+          >
+            <Text style={styles.styleEmoji}>📷</Text>
+            <Text style={styles.styleText}>Vintage</Text>
+          </TouchableOpacity>
+        </View>
+      </Card>
+
+      {/* Placeholder for image selection */}
+      <Card style={styles.card}>
+        <Text style={styles.label}>Ảnh đã chọn: {selectedImages.length}</Text>
+        <View style={styles.placeholderGrid}>
+          {[1, 2, 3, 4, 5, 6].map((i) => (
+            <View key={i} style={styles.placeholderImage}>
+              <Text style={styles.placeholderText}>+</Text>
+            </View>
+          ))}
+        </View>
+        <Text style={styles.placeholderNote}>
+          Chọn ảnh từ thư viện (tính năng sắp có)
+        </Text>
+      </Card>
+
+      {/* Generate Button */}
+      <Button
+        title="🎬 Tạo Video"
+        onPress={handleGenerate}
+        style={styles.generateButton}
+      />
+
+      <Text style={styles.disclaimer}>
+        Video sẽ được tạo và lưu vào thư viện của bạn
+      </Text>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: 20, paddingTop: 60 },
+  title: { fontSize: 24, fontWeight: '700', color: colors.text },
+  subtitle: { fontSize: 14, color: colors.textLight, marginBottom: 20 },
+  noChild: { textAlign: 'center', marginTop: 100, color: colors.textLight },
+  card: { marginBottom: 16 },
+  label: { fontSize: 14, fontWeight: '600', color: colors.text, marginBottom: 12 },
+  options: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
+  optionButton: { marginBottom: 4 },
+  styleOptions: { flexDirection: 'row', gap: 12 },
+  styleButton: { flex: 1, padding: 16, borderRadius: 12, backgroundColor: colors.background, alignItems: 'center' },
+  styleActive: { backgroundColor: colors.primaryLight, borderWidth: 2, borderColor: colors.primary },
+  styleEmoji: { fontSize: 24, marginBottom: 4 },
+  styleText: { fontSize: 14, fontWeight: '600' },
+  placeholderGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8, marginBottom: 12 },
+  placeholderImage: { width: 80, height: 80, borderRadius: 8, backgroundColor: colors.background, alignItems: 'center', justifyContent: 'center' },
+  placeholderText: { fontSize: 24, color: colors.textMuted },
+  placeholderNote: { fontSize: 12, color: colors.textMuted, textAlign: 'center' },
+  generateButton: { marginTop: 8 },
+  disclaimer: { fontSize: 12, color: colors.textMuted, textAlign: 'center', marginTop: 16 },
+});
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add app/\(tabs\)/timeslice.tsx
+git commit -m "feat: add timeslice screen (MVP placeholder)
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 4.2: Create Profile Screen with Child Management
+
+**Files:**
+- Create: `app/(tabs)/profile.tsx`
+
+- [ ] **Step 1: Create Profile Screen**
+
+```typescript
+import React, { useState } from 'react';
+import {
+  View,
+  Text,
+  StyleSheet,
+  ScrollView,
+  TouchableOpacity,
+  Alert,
+} from 'react-native';
+import { router } from 'expo-router';
+import { useAuthStore } from '../../src/stores/authStore';
+import { useChildStore } from '../../src/stores/childStore';
+import { Card } from '../../src/components/common/Card';
+import { Button } from '../../src/components/common/Button';
+import { Avatar } from '../../src/components/common/Avatar';
+import { Input } from '../../src/components/common/Input';
+import { colors } from '../../src/constants/colors';
+
+export default function ProfileScreen() {
+  const { user, profile, logout } = useAuthStore();
+  const { children, addChild, deleteChild, selectedChild } = useChildStore();
+  const [showAddChild, setShowAddChild] = useState(false);
+  const [newChildName, setNewChildName] = useState('');
+  const [newChildBirthDate, setNewChildBirthDate] = useState('');
+  const [newChildGender, setNewChildGender] = useState<'male' | 'female'>('male');
+  const [loading, setLoading] = useState(false);
+
+  const handleAddChild = async () => {
+    if (!newChildName || !newChildBirthDate) {
+      Alert.alert('Lỗi', 'Vui lòng nhập đầy đủ thông tin');
+      return;
+    }
+
+    setLoading(true);
+    try {
+      await addChild({
+        name: newChildName,
+        birth_date: newChildBirthDate,
+        gender: newChildGender,
+        photo_url: null,
+        clinic_id: null,
+      });
+      setShowAddChild(false);
+      setNewChildName('');
+      setNewChildBirthDate('');
+      Alert.alert('Thành công', 'Đã thêm bé!');
+    } catch (error) {
+      Alert.alert('Lỗi', (error as Error).message);
+    }
+    setLoading(false);
+  };
+
+  const handleDeleteChild = (childId: string) => {
+    Alert.alert(
+      'Xóa bé',
+      'Bạn có chắc muốn xóa? Tất cả dữ liệu theo dõi sẽ bị mất.',
+      [
+        { text: 'Hủy', style: 'cancel' },
+        {
+          text: 'Xóa',
+          style: 'destructive',
+          onPress: () => deleteChild(childId),
+        },
+      ]
+    );
+  };
+
+  const handleLogout = () => {
+    Alert.alert('Đăng xuất', 'Bạn có chắc muốn đăng xuất?', [
+      { text: 'Hủy', style: 'cancel' },
+      { text: 'Đăng xuất', onPress: logout },
+    ]);
+  };
+
+  return (
+    <ScrollView style={styles.container} contentContainerStyle={styles.content}>
+      <Text style={styles.title}>👤 Profile</Text>
+
+      {/* User Info */}
+      <Card style={styles.userCard}>
+        <View style={styles.userInfo}>
+          <Avatar uri={profile?.avatar_url} name={profile?.full_name || ''} size={64} />
+          <View style={styles.userDetails}>
+            <Text style={styles.userName}>{profile?.full_name || 'Mẹ/Bố'}</Text>
+            <Text style={styles.userEmail}>{user?.email}</Text>
+          </View>
+        </View>
+      </Card>
+
+      {/* Children List */}
+      <Text style={styles.sectionTitle}>Danh sách bé</Text>
+      {children.map((child) => (
+        <Card key={child.id} style={styles.childCard}>
+          <View style={styles.childRow}>
+            <Avatar uri={child.photo_url} name={child.name} size={48} />
+            <View style={styles.childInfo}>
+              <Text style={styles.childName}>{child.name}</Text>
+              <Text style={styles.childBirth}>
+                Sinh ngày: {child.birth_date}
+              </Text>
+            </View>
+            <TouchableOpacity onPress={() => handleDeleteChild(child.id)}>
+              <Text style={styles.deleteButton}>🗑️</Text>
+            </TouchableOpacity>
+          </View>
+        </Card>
+      ))}
+
+      {/* Add Child */}
+      {showAddChild ? (
+        <Card style={styles.addCard}>
+          <Input
+            label="Tên bé"
+            placeholder="Nguyễn Văn A"
+            value={newChildName}
+            onChangeText={setNewChildName}
+          />
+          <Input
+            label="Ngày sinh (YYYY-MM-DD)"
+            placeholder="2024-01-15"
+            value={newChildBirthDate}
+            onChangeText={setNewChildBirthDate}
+          />
+          <View style={styles.genderSelector}>
+            <Button
+              title="👦 Bé trai"
+              variant={newChildGender === 'male' ? 'primary' : 'outline'}
+              size="small"
+              onPress={() => setNewChildGender('male')}
+              style={styles.genderButton}
+            />
+            <Button
+              title="👧 Bé gái"
+              variant={newChildGender === 'female' ? 'primary' : 'outline'}
+              size="small"
+              onPress={() => setNewChildGender('female')}
+              style={styles.genderButton}
+            />
+          </View>
+          <View style={styles.addActions}>
+            <Button
+              title="Hủy"
+              variant="ghost"
+              onPress={() => setShowAddChild(false)}
+            />
+            <Button
+              title="Thêm"
+              onPress={handleAddChild}
+              loading={loading}
+            />
+          </View>
+        </Card>
+      ) : (
+        <Button
+          title="➕ Thêm bé"
+          variant="outline"
+          onPress={() => setShowAddChild(true)}
+          style={styles.addButton}
+        />
+      )}
+
+      {/* Settings */}
+      <Text style={styles.sectionTitle}>Cài đặt</Text>
+      <Card style={styles.settingsCard}>
+        <TouchableOpacity style={styles.settingRow}>
+          <Text style={styles.settingText}>🔔 Thông báo</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.settingRow}>
+          <Text style={styles.settingText}>🔒 Bảo mật</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity style={styles.settingRow}>
+          <Text style={styles.settingText}>❓ Trợ giúp</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+      </Card>
+
+      {/* Logout */}
+      <Button
+        title="Đăng xuất"
+        variant="ghost"
+        onPress={handleLogout}
+        style={styles.logoutButton}
+      />
+
+      <Text style={styles.version}>Baby Tracker v1.0.0</Text>
+    </ScrollView>
+  );
+}
+
+const styles = StyleSheet.create({
+  container: { flex: 1, backgroundColor: colors.background },
+  content: { padding: 20, paddingTop: 60 },
+  title: { fontSize: 24, fontWeight: '700', color: colors.text, marginBottom: 20 },
+  userCard: { marginBottom: 24 },
+  userInfo: { flexDirection: 'row', alignItems: 'center' },
+  userDetails: { marginLeft: 16, flex: 1 },
+  userName: { fontSize: 18, fontWeight: '600', color: colors.text },
+  userEmail: { fontSize: 14, color: colors.textLight, marginTop: 4 },
+  sectionTitle: { fontSize: 16, fontWeight: '600', color: colors.text, marginBottom: 12 },
+  childCard: { marginBottom: 12 },
+  childRow: { flexDirection: 'row', alignItems: 'center' },
+  childInfo: { flex: 1, marginLeft: 12 },
+  childName: { fontSize: 16, fontWeight: '600', color: colors.text },
+  childBirth: { fontSize: 12, color: colors.textLight, marginTop: 2 },
+  deleteButton: { fontSize: 20, padding: 8 },
+  addCard: { marginBottom: 16 },
+  genderSelector: { flexDirection: 'row', gap: 8, marginBottom: 16 },
+  genderButton: { flex: 1 },
+  addActions: { flexDirection: 'row', justifyContent: 'flex-end', gap: 8 },
+  addButton: { marginBottom: 24 },
+  settingsCard: { marginBottom: 24 },
+  settingRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', paddingVertical: 12, borderBottomWidth: 1, borderBottomColor: colors.divider },
+  settingText: { fontSize: 16, color: colors.text },
+  settingArrow: { fontSize: 24, color: colors.textMuted },
+  logoutButton: { marginBottom: 16 },
+  version: { fontSize: 12, color: colors.textMuted, textAlign: 'center' },
+});
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add app/\(tabs\)/profile.tsx
+git commit -m "feat: add profile screen with child management
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+```
+
+---
+
+### Task 4.3: Final Integration & Build
+
+**Files:**
+- Create: `src/utils/date.ts`
+- Create: `src/utils/validation.ts`
+
+- [ ] **Step 1: Create utility files**
+
+```typescript
+// src/utils/date.ts
+import { format, parseISO, differenceInMonths, differenceInYears } from 'date-fns';
+
+export const formatDate = (date: string | Date, formatStr = 'dd/MM/yyyy'): string => {
+  const d = typeof date === 'string' ? parseISO(date) : date;
+  return format(d, formatStr);
+};
+
+export const formatDateTime = (date: string | Date): string => {
+  return formatDate(date, 'dd/MM/yyyy HH:mm');
+};
+
+export const getAgeString = (birthDate: string): string => {
+  const birth = parseISO(birthDate);
+  const now = new Date();
+  const years = differenceInYears(now, birth);
+  const months = differenceInMonths(now, birth) % 12;
+
+  if (years === 0) {
+    return `${months} tháng tuổi`;
+  }
+  if (months === 0) {
+    return `${years} tuổi`;
+  }
+  return `${years} tuổi ${months} tháng`;
+};
+
+export const getVietnameseDate = (date: string | Date): string => {
+  const d = typeof date === 'string' ? parseISO(date) : date;
+  return format(d, 'dd MMMM yyyy', { locale: require('date-fns/locale/vi') });
+};
+```
+
+```typescript
+// src/utils/validation.ts
+export const isValidEmail = (email: string): boolean => {
+  const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  return emailRegex.test(email);
+};
+
+export const isValidPassword = (password: string): boolean => {
+  return password.length >= 6;
+};
+
+export const isValidDate = (dateStr: string): boolean => {
+  const dateRegex = /^\d{4}-\d{2}-\d{2}$/;
+  if (!dateRegex.test(dateStr)) return false;
+  const date = new Date(dateStr);
+  return !isNaN(date.getTime());
+};
+
+export const isPositiveNumber = (value: string): boolean => {
+  const num = parseFloat(value);
+  return !isNaN(num) && num > 0;
+};
+```
+
+- [ ] **Step 2: Commit**
+
+```bash
+git add src/utils/
+git commit -m "feat: add utility functions
+
+Co-Authored-By: Claude Opus 4.6 <noreply@anthropic.com>"
+```
+
+---
+
+## Summary
+
+| Chunk | Tasks | Status |
+|-------|-------|--------|
+| **Chunk 1: Foundation** | 10 tasks | ✅ Complete |
+| **Chunk 2: Core Tracking** | 3 tasks | ✅ Complete |
+| **Chunk 3: AI Features** | 2 tasks | ✅ Complete |
+| **Chunk 4: Polish** | 3 tasks | ✅ Complete |
+
+**Total: 18 implementation tasks**
+
+---
+
+## Next Steps
+
+1. **Run database migration** - Apply SQL schema to Supabase
+2. **Configure environment variables** - Add API keys to `.env`
+3. **Build the project** - Run `npx expo prebuild && npx expo run:android`
+4. **Test on device/emulator** - Verify all features work
 
 ---
