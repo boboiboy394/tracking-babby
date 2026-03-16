@@ -107,6 +107,10 @@ export interface Moment {
   image_url: string;
   caption: string | null;
   created_at: string;
+  // Joined fields (optional)
+  child_name?: string;
+  user_name?: string;
+  user_avatar?: string;
 }
 
 export interface FamilyGroup {
