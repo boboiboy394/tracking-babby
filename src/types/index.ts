@@ -98,3 +98,44 @@ export interface AIAnalysisResponse {
   recommendations: string[];
   alerts: string[];
 }
+
+// Moments Types
+export interface Moment {
+  id: string;
+  user_id: string;
+  child_id: string;
+  image_url: string;
+  caption: string | null;
+  created_at: string;
+}
+
+export interface FamilyGroup {
+  id: string;
+  name: string;
+  created_by: string;
+  created_at: string;
+}
+
+export interface FamilyMember {
+  id: string;
+  group_id: string;
+  user_id: string;
+  role: 'admin' | 'member';
+  joined_at: string;
+}
+
+export interface Friendship {
+  id: string;
+  user_id: string;
+  friend_id: string;
+  status: 'pending' | 'accepted' | 'rejected';
+  created_at: string;
+}
+
+export interface MomentShare {
+  id: string;
+  moment_id: string;
+  shared_with_id: string;
+  shared_type: 'friend' | 'family';
+  created_at: string;
+}
