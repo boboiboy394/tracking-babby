@@ -6,7 +6,7 @@ export const config = {
 
   groq: {
     apiKey: process.env.EXPO_PUBLIC_GROQ_KEY || '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',
-    model: 'llama-3.1-70b-versatile',
+    model: 'llama-3.1-8b-instant',
   },
 
   app: {

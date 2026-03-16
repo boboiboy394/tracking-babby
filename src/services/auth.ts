@@ -27,9 +27,20 @@ export const authService = {
     if (error) throw error;
     if (!data.user) throw new Error('Registration failed');
 
-    // Profile is automatically created by the trigger in the database
-    // Just wait a moment for trigger to complete
-    await new Promise(resolve => setTimeout(resolve, 500));
+    // Manually create profile since database trigger may not work
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert({
+        id: data.user.id,
+        email,
+        full_name: full_name || null,
+        role: 'parent',
+      });
+
+    if (profileError) {
+      console.warn('Profile creation warning:', profileError);
+      // Continue anyway - profile might already exist from trigger
+    }
 
     return { id: data.user.id, email };
   },

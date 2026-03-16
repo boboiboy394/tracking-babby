@@ -8,6 +8,7 @@ function TabIcon({ name, focused }: { name: string; focused: boolean }) {
     index: '🏠',
     tracking: '📊',
     ai: '🤖',
+    chat: '💬',
     timeslice: '🎬',
     profile: '👤',
   };
@@ -51,6 +52,13 @@ export default function TabLayout() {
         options={{
           title: 'AI',
           tabBarIcon: ({ focused }) => <TabIcon name="ai" focused={focused} />,
+        }}
+      />
+      <Tabs.Screen
+        name="chat"
+        options={{
+          title: 'Chat',
+          tabBarIcon: ({ focused }) => <TabIcon name="chat" focused={focused} />,
         }}
       />
       <Tabs.Screen
