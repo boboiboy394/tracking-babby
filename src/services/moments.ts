@@ -3,10 +3,41 @@ import type { Moment } from '../types';
 
 export const momentService = {
   async getFeed(userId: string): Promise<Moment[]> {
-    // Get moments from:
+    // Get user IDs to fetch moments from:
     // 1. User's own moments
     // 2. Family members' moments
     // 3. Friends' moments (accepted)
+
+    // Get family member IDs
+    const { data: userFamilyGroups } = await supabase
+      .from('family_members')
+      .select('group_id')
+      .eq('user_id', userId)
+      .limit(1);
+
+    let familyIds: string[] = [];
+    if (userFamilyGroups && userFamilyGroups.length > 0) {
+      const groupId = userFamilyGroups[0].group_id;
+      const { data: familyMembers } = await supabase
+        .from('family_members')
+        .select('user_id')
+        .eq('group_id', groupId);
+      familyIds = familyMembers?.map(f => f.user_id) || [];
+    }
+
+    // Get friend IDs (accepted friendships)
+    const { data: friendships } = await supabase
+      .from('friendships')
+      .select('friend_id, user_id')
+      .eq('user_id', userId)
+      .eq('status', 'accepted');
+
+    const friendIds = friendships?.map(f => f.friend_id) || [];
+
+    // Combine all user IDs
+    const allUserIds = [userId, ...familyIds, ...friendIds];
+    const uniqueUserIds = [...new Set(allUserIds)];
+
     const { data, error } = await supabase
       .from('moments')
       .select(`
@@ -14,7 +45,7 @@ export const momentService = {
         child:children(name),
         user:profiles(full_name, avatar_url)
       `)
-      .or(`user_id.eq.${userId}`)
+      .in('user_id', uniqueUserIds)
       .order('created_at', { ascending: false })
       .limit(50);
 

@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   Alert,
 } from 'react-native';
+import { useRouter } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useChildStore } from '../../src/stores/childStore';
 import { Card } from '../../src/components/common/Card';
@@ -16,6 +17,7 @@ import { Input } from '../../src/components/common/Input';
 import { colors } from '../../src/constants/colors';
 
 export default function ProfileScreen() {
+  const router = useRouter();
   const { user, profile, logout } = useAuthStore();
   const { children, addChild, deleteChild, selectedChild } = useChildStore();
   const [showAddChild, setShowAddChild] = useState(false);
@@ -157,6 +159,25 @@ export default function ProfileScreen() {
           style={styles.addButton}
         />
       )}
+
+      {/* Family & Friends */}
+      <Text style={styles.sectionTitle}>Gia đình & Bạn bè</Text>
+      <Card style={styles.settingsCard}>
+        <TouchableOpacity
+          style={styles.settingRow}
+          onPress={() => router.push('/family')}
+        >
+          <Text style={styles.settingText}>👨‍👩‍👧‍👦 Gia đình</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={styles.settingRow}
+          onPress={() => router.push('/friends')}
+        >
+          <Text style={styles.settingText}>👥 Bạn bè</Text>
+          <Text style={styles.settingArrow}>›</Text>
+        </TouchableOpacity>
+      </Card>
 
       {/* Settings */}
       <Text style={styles.sectionTitle}>Cài đặt</Text>
