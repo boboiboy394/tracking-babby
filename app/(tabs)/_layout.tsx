@@ -1,18 +1,28 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
 import { colors } from '../../src/constants/colors';
-import { View, Text, StyleSheet } from 'react-native';
+import { View, Text, StyleSheet, Platform } from 'react-native';
 
-function TabIcon({ name, focused }: { name: string; focused: boolean }) {
+function TabIcon({ name, focused, isCenter }: { name: string; focused: boolean; isCenter?: boolean }) {
   const icons: Record<string, string> = {
     index: '🏠',
     tracking: '📊',
-    ai: '🤖',
-    chat: '💬',
-    timeslice: '🎬',
-    profile: '👤',
     moments: '📸',
+    chat: '💬',
+    profile: '👤',
   };
+
+  const size = isCenter ? 28 : 22;
+
+  if (isCenter) {
+    return (
+      <View style={styles.centerIconContainer}>
+        <View style={styles.centerIconBg}>
+          <Text style={styles.centerIconText}>📸</Text>
+        </View>
+      </View>
+    );
+  }
 
   return (
     <View style={styles.tabIcon}>
@@ -44,15 +54,15 @@ export default function TabLayout() {
       <Tabs.Screen
         name="tracking"
         options={{
-          title: 'Tracking',
+          title: 'Theo dõi',
           tabBarIcon: ({ focused }) => <TabIcon name="tracking" focused={focused} />,
         }}
       />
       <Tabs.Screen
-        name="ai"
+        name="moments"
         options={{
-          title: 'AI',
-          tabBarIcon: ({ focused }) => <TabIcon name="ai" focused={focused} />,
+          title: 'Khoảnh khắc',
+          tabBarIcon: ({ focused }) => <TabIcon name="moments" focused={focused} isCenter />,
         }}
       />
       <Tabs.Screen
@@ -63,23 +73,9 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name="timeslice"
-        options={{
-          title: 'Timeslice',
-          tabBarIcon: ({ focused }) => <TabIcon name="timeslice" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
-        name="moments"
-        options={{
-          title: 'Moments',
-          tabBarIcon: ({ focused }) => <TabIcon name="moments" focused={focused} />,
-        }}
-      />
-      <Tabs.Screen
         name="profile"
         options={{
-          title: 'Profile',
+          title: 'Hồ sơ',
           tabBarIcon: ({ focused }) => <TabIcon name="profile" focused={focused} />,
         }}
       />
@@ -91,17 +87,24 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: colors.surface,
     borderTopColor: colors.border,
-    height: 85,
+    height: Platform.OS === 'ios' ? 85 : 70,
     paddingTop: 8,
-    paddingBottom: 25,
+    paddingBottom: Platform.OS === 'ios' ? 30 : 15,
+    elevation: 8,
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: -2 },
+    shadowOpacity: 0.1,
+    shadowRadius: 4,
   },
   tabLabel: {
     fontSize: 11,
     fontWeight: '600',
+    marginBottom: 4,
   },
   tabIcon: {
     alignItems: 'center',
     justifyContent: 'center',
+    paddingTop: 4,
   },
   icon: {
     fontSize: 22,
@@ -109,5 +112,28 @@ const styles = StyleSheet.create({
   },
   iconFocused: {
     opacity: 1,
+  },
+  centerIconContainer: {
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginTop: -15,
+  },
+  centerIconBg: {
+    width: 52,
+    height: 52,
+    borderRadius: 26,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+    shadowColor: colors.primary,
+    shadowOffset: { width: 0, height: 4 },
+    shadowOpacity: 0.4,
+    shadowRadius: 8,
+    elevation: 8,
+    borderWidth: 3,
+    borderColor: colors.surface,
+  },
+  centerIconText: {
+    fontSize: 26,
   },
 });

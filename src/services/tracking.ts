@@ -1,5 +1,6 @@
 import { supabase } from './supabase';
 import type { TrackingRecord, RecordType, RecordData } from '../types';
+import { startOfMonth, endOfMonth, format } from 'date-fns';
 
 export const trackingService = {
   async getRecords(
@@ -97,5 +98,42 @@ export const trackingService = {
 
   async getVaccinations(childId: string): Promise<TrackingRecord[]> {
     return this.getRecords(childId, { type: 'vaccination' });
+  },
+
+  /**
+   * Get growth record for current month
+   */
+  async getCurrentMonthGrowth(childId: string): Promise<TrackingRecord | null> {
+    const now = new Date();
+    const records = await this.getRecords(childId, {
+      type: 'growth',
+      dateFrom: startOfMonth(now).toISOString(),
+      dateTo: endOfMonth(now).toISOString(),
+      limit: 1,
+    });
+    return records.length > 0 ? records[0] : null;
+  },
+
+  /**
+   * Get latest growth record
+   */
+  async getLatestGrowth(childId: string): Promise<TrackingRecord | null> {
+    const records = await this.getGrowthHistory(childId, 1);
+    return records.length > 0 ? records[0] : null;
+  },
+
+  /**
+   * Get all vaccinations for a child (simple list for comparison)
+   */
+  async getVaccinatedList(childId: string): Promise<string[]> {
+    const records = await this.getVaccinations(childId);
+    const vaccines: string[] = [];
+    for (const record of records) {
+      const data = record.data as { vaccine_name?: string };
+      if (data.vaccine_name) {
+        vaccines.push(data.vaccine_name);
+      }
+    }
+    return vaccines;
   },
 };

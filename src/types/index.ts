@@ -36,12 +36,16 @@ export interface MilestoneData {
   milestone_type: 'teeth' | 'crawl' | 'walk' | 'talk' | 'roll' | 'sit';
   description: string;
   date_achieved?: string;
+  media_url?: string;
+  media_type?: 'image' | 'video';
 }
 
 export interface VaccinationData {
   vaccine_name: string;
   dose_number: number;
   date: string;
+  hospital?: string;
+  location?: string;
 }
 
 export interface GrowthData {
