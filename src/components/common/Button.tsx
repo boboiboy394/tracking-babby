@@ -90,7 +90,7 @@ export const Button: React.FC<ButtonProps> = ({
 
 const styles = StyleSheet.create({
   base: {
-    borderRadius: 12,
+    borderRadius: 14,
     alignItems: 'center',
     justifyContent: 'center',
   },
@@ -102,7 +102,7 @@ const styles = StyleSheet.create({
   },
   outline: {
     backgroundColor: colors.transparent,
-    borderWidth: 2,
+    borderWidth: 1.5,
     borderColor: colors.primary,
   },
   ghost: {
@@ -112,7 +112,7 @@ const styles = StyleSheet.create({
     opacity: 0.5,
   },
   small: {
-    paddingVertical: 8,
+    paddingVertical: 10,
     paddingHorizontal: 16,
   },
   medium: {
@@ -124,17 +124,18 @@ const styles = StyleSheet.create({
     paddingHorizontal: 32,
   },
   text: {
-    fontSize: 16,
+    fontSize: 15,
     fontWeight: '600',
+    letterSpacing: 0.2,
   },
   smallText: {
-    fontSize: 14,
+    fontSize: 13,
   },
   mediumText: {
-    fontSize: 16,
+    fontSize: 15,
   },
   largeText: {
-    fontSize: 18,
+    fontSize: 17,
   },
   primaryText: {
     color: colors.white,

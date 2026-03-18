@@ -9,12 +9,14 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { Ionicons } from '@expo/vector-icons';
 import { router } from 'expo-router';
 import { useAuthStore } from '../../src/stores/authStore';
 import { useChildStore } from '../../src/stores/childStore';
 import { Card } from '../../src/components/common/Card';
 import { Avatar } from '../../src/components/common/Avatar';
 import { colors } from '../../src/constants/colors';
+import { typography } from '../../src/constants/typography';
 import { differenceInMonths } from 'date-fns';
 import { trackingService } from '../../src/services/tracking';
 import { vaccineService } from '../../src/services/vaccineSchedule';
@@ -41,18 +43,15 @@ export default function HomeScreen() {
     }
   }, [user, fetchChildren]);
 
-  // Fetch growth data when child changes
   useEffect(() => {
     const fetchGrowthData = async () => {
       if (!selectedChild) return;
       setLoadingGrowth(true);
       try {
-        // Try to get current month data first
         const currentMonthData = await trackingService.getCurrentMonthGrowth(selectedChild.id);
         if (currentMonthData) {
           setGrowthData(currentMonthData.data as GrowthData);
         } else {
-          // Fallback to latest data
           const latestData = await trackingService.getLatestGrowth(selectedChild.id);
           if (latestData) {
             setGrowthData(latestData.data as GrowthData);
@@ -67,7 +66,6 @@ export default function HomeScreen() {
     fetchGrowthData();
   }, [selectedChild?.id]);
 
-  // Fetch next vaccine when child changes
   useEffect(() => {
     const fetchVaccineData = async () => {
       if (!selectedChild) return;
@@ -128,6 +126,7 @@ export default function HomeScreen() {
         <RefreshControl refreshing={isLoading} onRefresh={handleRefresh} />
       }
     >
+      {/* Header */}
       <View style={styles.header}>
         <View>
           <Text style={styles.greeting}>{greeting}</Text>
@@ -138,8 +137,9 @@ export default function HomeScreen() {
         <Avatar uri={profile?.avatar_url} name={profile?.full_name || ''} size={48} />
       </View>
 
+      {/* Child Card */}
       {selectedChild ? (
-        <Card style={styles.childCard}>
+        <Card style={styles.childCard} variant="elevated">
           <View style={styles.childHeader}>
             <Avatar uri={selectedChild.photo_url} name={selectedChild.name} size={64} />
             <View style={styles.childInfo}>
@@ -156,7 +156,7 @@ export default function HomeScreen() {
                   style={({ pressed }) => [
                     styles.childChip,
                     selectedChild.id === child.id && styles.childChipActive,
-                    { opacity: pressed ? 0.7 : 1 }
+                    pressed && styles.chipPressed,
                   ]}
                   onPress={() => handleSelectChild(child)}
                 >
@@ -174,112 +174,146 @@ export default function HomeScreen() {
           )}
         </Card>
       ) : (
-        <Card style={styles.emptyCard}>
-          <Text style={styles.emptyIcon}>👶</Text>
+        <Card style={styles.emptyCard} variant="elevated">
+          <View style={styles.emptyIconBg}>
+            <Ionicons name="person" size={40} color={colors.primary} />
+          </View>
           <Text style={styles.emptyTitle}>Chưa có bé nào</Text>
           <Text style={styles.emptyText}>Thêm bé để bắt đầu theo dõi</Text>
           <Pressable
             style={({ pressed }) => [
               styles.addButton,
-              { opacity: pressed ? 0.8 : 1 }
+              pressed && styles.addButtonPressed,
             ]}
             onPress={handleGoToProfile}
           >
-            <Text style={styles.addButtonText}>+ Thêm bé</Text>
+            <Ionicons name="add" size={20} color={colors.white} />
+            <Text style={styles.addButtonText}>Thêm bé</Text>
           </Pressable>
         </Card>
       )}
 
+      {/* Quick Actions */}
       <Text style={styles.sectionTitle}>Hành động nhanh</Text>
       <View style={styles.quickActions}>
         <Pressable
           style={({ pressed }) => [
             styles.actionCard,
-            { opacity: pressed ? 0.8 : 1 }
+            pressed && styles.actionCardPressed,
           ]}
           onPress={handleGoToTracking}
         >
-          <Text style={styles.actionIcon}>🍼</Text>
+          <View style={[styles.actionIconBg, { backgroundColor: colors.secondary + '20' }]}>
+            <Ionicons name="water" size={24} color={colors.secondary} />
+          </View>
           <Text style={styles.actionText}>Thêm bữa ăn</Text>
         </Pressable>
 
         <Pressable
           style={({ pressed }) => [
             styles.actionCard,
-            { opacity: pressed ? 0.8 : 1 }
+            pressed && styles.actionCardPressed,
           ]}
           onPress={handleGoToTimeslice}
         >
-          <Text style={styles.actionIcon}>🎬</Text>
+          <View style={[styles.actionIconBg, { backgroundColor: colors.primary + '20' }]}>
+            <Ionicons name="videocam" size={24} color={colors.primary} />
+          </View>
           <Text style={styles.actionText}>Tạo Video</Text>
         </Pressable>
 
         <Pressable
           style={({ pressed }) => [
             styles.actionCard,
-            { opacity: pressed ? 0.8 : 1 }
+            pressed && styles.actionCardPressed,
           ]}
           onPress={handleGoToAI}
         >
-          <Text style={styles.actionIcon}>🤖</Text>
+          <View style={[styles.actionIconBg, { backgroundColor: colors.accent + '20' }]}>
+            <Ionicons name="bulb" size={24} color={colors.accentDark} />
+          </View>
           <Text style={styles.actionText}>Phân tích AI</Text>
         </Pressable>
       </View>
 
       {/* Growth Card */}
-      <Card style={styles.growthCard}>
+      <Card style={styles.statsCard} variant="elevated">
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>📈 Tăng trưởng tháng này</Text>
-          <Text style={styles.seeAll} onPress={handleGoToTracking}>Xem chi tiết</Text>
+          <View style={styles.cardTitleRow}>
+            <View style={[styles.cardIconBg, { backgroundColor: colors.secondary + '15' }]}>
+              <Ionicons name="trending-up" size={18} color={colors.secondary} />
+            </View>
+            <Text style={styles.cardTitle}>Tăng trưởng tháng này</Text>
+          </View>
+          <Pressable onPress={handleGoToTracking}>
+            <Text style={styles.seeAll}>Xem chi tiết</Text>
+          </Pressable>
         </View>
         {loadingGrowth ? (
           <ActivityIndicator size="small" color={colors.primary} />
         ) : growthData ? (
           <View style={styles.growthStats}>
             <View style={styles.growthStat}>
-              <Text style={styles.growthValue}>{growthData.height_cm} cm</Text>
-              <Text style={styles.growthLabel}>Chiều cao</Text>
+              <Text style={styles.growthValue}>{growthData.height_cm}</Text>
+              <Text style={styles.growthLabel}>cm</Text>
+              <Text style={styles.growthUnit}>Chiều cao</Text>
             </View>
             <View style={styles.growthDivider} />
             <View style={styles.growthStat}>
-              <Text style={styles.growthValue}>{growthData.weight_kg} kg</Text>
-              <Text style={styles.growthLabel}>Cân nặng</Text>
+              <Text style={styles.growthValue}>{growthData.weight_kg}</Text>
+              <Text style={styles.growthLabel}>kg</Text>
+              <Text style={styles.growthUnit}>Cân nặng</Text>
             </View>
           </View>
         ) : (
           <View style={styles.noData}>
+            <Ionicons name="add-circle-outline" size={32} color={colors.textMuted} />
             <Text style={styles.noDataText}>Chưa có dữ liệu</Text>
-            <Text style={styles.noDataSubtext}>Cập nhật ngay tại mục Cao/Cân</Text>
+            <Text style={styles.noDataSubtext}>Cập nhật tại mục Cao/Cân</Text>
           </View>
         )}
       </Card>
 
       {/* Vaccine Card */}
-      <Card style={styles.vaccineCard}>
+      <Card style={styles.statsCard} variant="elevated">
         <View style={styles.cardHeader}>
-          <Text style={styles.cardTitle}>💉 Vaccine sắp tới</Text>
-          <Text style={styles.seeAll} onPress={handleGoToTracking}>Xem lịch</Text>
+          <View style={styles.cardTitleRow}>
+            <View style={[styles.cardIconBg, { backgroundColor: colors.primary + '15' }]}>
+              <Ionicons name="medical" size={18} color={colors.primary} />
+            </View>
+            <Text style={styles.cardTitle}>Vaccine sắp tới</Text>
+          </View>
+          <Pressable onPress={handleGoToTracking}>
+            <Text style={styles.seeAll}>Xem lịch</Text>
+          </Pressable>
         </View>
         {loadingVaccine ? (
           <ActivityIndicator size="small" color={colors.primary} />
         ) : nextVaccine ? (
           <View style={styles.vaccineInfo}>
-            <View style={styles.vaccineItem}>
-              <Text style={styles.vaccineName}>{nextVaccine.item.vaccines.join(', ')}</Text>
-              <Text style={styles.vaccineDate}>
-                {vaccineService.formatDate(nextVaccine.scheduledDate)}
-              </Text>
+            <Text style={styles.vaccineName}>{nextVaccine.item.vaccines.join(', ')}</Text>
+            <Text style={styles.vaccineDate}>
+              {vaccineService.formatDate(nextVaccine.scheduledDate)}
+            </Text>
+            <View style={[
+              styles.vaccineBadge,
+              nextVaccine.daysUntil <= 0 && styles.vaccineBadgeUrgent,
+              nextVaccine.daysUntil <= 7 && nextVaccine.daysUntil > 0 && styles.vaccineBadgeSoon,
+            ]}>
               <Text style={[
-                styles.vaccineStatus,
-                nextVaccine.daysUntil <= 0 && styles.vaccineStatusUrgent,
-                nextVaccine.daysUntil <= 7 && nextVaccine.daysUntil > 0 && styles.vaccineStatusSoon,
+                styles.vaccineBadgeText,
+                nextVaccine.daysUntil <= 0 && styles.vaccineBadgeTextUrgent,
+                nextVaccine.daysUntil <= 7 && nextVaccine.daysUntil > 0 && styles.vaccineBadgeTextSoon,
               ]}>
                 {vaccineService.getStatusText(nextVaccine.daysUntil)}
               </Text>
             </View>
           </View>
         ) : (
-          <Text style={styles.vaccineText}>✅ Đã tiêm đầy đủ theo lịch!</Text>
+          <View style={styles.vaccineComplete}>
+            <Ionicons name="checkmark-circle" size={24} color={colors.success} />
+            <Text style={styles.vaccineCompleteText}>Đã tiêm đầy đủ theo lịch!</Text>
+          </View>
         )}
       </Card>
     </ScrollView>
@@ -293,6 +327,7 @@ const styles = StyleSheet.create({
   },
   content: {
     padding: 20,
+    paddingBottom: 100,
   },
   header: {
     flexDirection: 'row',
@@ -301,13 +336,14 @@ const styles = StyleSheet.create({
     marginBottom: 24,
   },
   greeting: {
-    fontSize: 16,
+    ...typography.bodyMedium,
     color: colors.textLight,
   },
   childName: {
-    fontSize: 14,
+    ...typography.bodySmall,
     color: colors.primary,
     marginTop: 4,
+    fontWeight: '500',
   },
   childCard: {
     marginBottom: 24,
@@ -321,12 +357,11 @@ const styles = StyleSheet.create({
     flex: 1,
   },
   childNameLarge: {
-    fontSize: 22,
-    fontWeight: '600',
+    ...typography.headline,
     color: colors.text,
   },
   childAge: {
-    fontSize: 14,
+    ...typography.bodyMedium,
     color: colors.textLight,
     marginTop: 4,
   },
@@ -336,20 +371,27 @@ const styles = StyleSheet.create({
     paddingTop: 16,
     borderTopWidth: 1,
     borderTopColor: colors.divider,
-    gap: 8,
+    gap: 10,
   },
   childChip: {
     paddingHorizontal: 16,
     paddingVertical: 8,
     borderRadius: 20,
     backgroundColor: colors.background,
+    borderWidth: 1,
+    borderColor: colors.border,
+  },
+  chipPressed: {
+    opacity: 0.8,
   },
   childChipActive: {
     backgroundColor: colors.primary,
+    borderColor: colors.primary,
   },
   childChipText: {
-    fontSize: 14,
+    ...typography.bodySmall,
     color: colors.textLight,
+    fontWeight: '500',
   },
   childChipTextActive: {
     color: colors.white,
@@ -360,34 +402,44 @@ const styles = StyleSheet.create({
     paddingVertical: 32,
     marginBottom: 24,
   },
-  emptyIcon: {
-    fontSize: 48,
+  emptyIconBg: {
+    width: 80,
+    height: 80,
+    borderRadius: 40,
+    backgroundColor: colors.primaryLight + '30',
+    alignItems: 'center',
+    justifyContent: 'center',
     marginBottom: 16,
   },
   emptyTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.headlineSmall,
     color: colors.text,
     marginBottom: 8,
   },
   emptyText: {
-    fontSize: 14,
+    ...typography.bodyMedium,
     color: colors.textLight,
-    marginBottom: 16,
+    marginBottom: 20,
   },
   addButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
     backgroundColor: colors.primary,
     paddingHorizontal: 24,
-    paddingVertical: 12,
+    paddingVertical: 14,
     borderRadius: 24,
+    gap: 8,
+  },
+  addButtonPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
   },
   addButtonText: {
+    ...typography.button,
     color: colors.white,
-    fontWeight: '600',
   },
   sectionTitle: {
-    fontSize: 18,
-    fontWeight: '600',
+    ...typography.headlineSmall,
     color: colors.text,
     marginBottom: 16,
   },
@@ -399,24 +451,32 @@ const styles = StyleSheet.create({
   actionCard: {
     flex: 1,
     backgroundColor: colors.surface,
-    borderRadius: 16,
+    borderRadius: 20,
     padding: 16,
     alignItems: 'center',
+    borderWidth: 1,
+    borderColor: colors.border,
   },
-  actionIcon: {
-    fontSize: 28,
-    marginBottom: 8,
+  actionCardPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.98 }],
+  },
+  actionIconBg: {
+    width: 52,
+    height: 52,
+    borderRadius: 16,
+    alignItems: 'center',
+    justifyContent: 'center',
+    marginBottom: 12,
   },
   actionText: {
-    fontSize: 12,
+    ...typography.bodySmall,
     color: colors.text,
     textAlign: 'center',
+    fontWeight: '500',
   },
-  growthCard: {
+  statsCard: {
     marginBottom: 16,
-  },
-  vaccineCard: {
-    marginBottom: 24,
   },
   cardHeader: {
     flexDirection: 'row',
@@ -424,15 +484,27 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 16,
   },
+  cardTitleRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 10,
+  },
+  cardIconBg: {
+    width: 36,
+    height: 36,
+    borderRadius: 10,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
   cardTitle: {
-    fontSize: 16,
+    ...typography.bodyLarge,
     fontWeight: '600',
     color: colors.text,
   },
   seeAll: {
-    fontSize: 14,
+    ...typography.bodySmall,
     color: colors.primary,
-    fontWeight: '500',
+    fontWeight: '600',
   },
   growthStats: {
     flexDirection: 'row',
@@ -443,64 +515,84 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   growthValue: {
-    fontSize: 24,
-    fontWeight: '700',
+    ...typography.displayMedium,
     color: colors.text,
+    fontWeight: '700',
   },
   growthLabel: {
-    fontSize: 12,
+    ...typography.labelSmall,
     color: colors.textLight,
+    marginTop: -4,
+  },
+  growthUnit: {
+    ...typography.bodySmall,
+    color: colors.textMuted,
     marginTop: 4,
   },
   growthDivider: {
     width: 1,
-    height: 40,
+    height: 48,
     backgroundColor: colors.divider,
   },
   noData: {
     alignItems: 'center',
-    paddingVertical: 8,
+    paddingVertical: 12,
+    gap: 8,
   },
   noDataText: {
-    fontSize: 16,
+    ...typography.bodyMedium,
     color: colors.textMuted,
   },
   noDataSubtext: {
-    fontSize: 12,
+    ...typography.bodySmall,
     color: colors.primary,
-    marginTop: 4,
   },
   vaccineInfo: {
     alignItems: 'center',
-  },
-  vaccineItem: {
-    alignItems: 'center',
+    gap: 6,
   },
   vaccineName: {
-    fontSize: 16,
+    ...typography.bodyLarge,
     fontWeight: '600',
     color: colors.text,
-    marginBottom: 4,
   },
   vaccineDate: {
-    fontSize: 14,
+    ...typography.bodyMedium,
     color: colors.textLight,
-    marginBottom: 4,
   },
-  vaccineStatus: {
-    fontSize: 14,
-    fontWeight: '600',
+  vaccineBadge: {
+    paddingHorizontal: 12,
+    paddingVertical: 6,
+    borderRadius: 16,
+    backgroundColor: colors.background,
+    marginTop: 4,
+  },
+  vaccineBadgeUrgent: {
+    backgroundColor: colors.error + '20',
+  },
+  vaccineBadgeSoon: {
+    backgroundColor: colors.warning + '20',
+  },
+  vaccineBadgeText: {
+    ...typography.labelSmall,
     color: colors.textMuted,
+    fontWeight: '600',
   },
-  vaccineStatusUrgent: {
+  vaccineBadgeTextUrgent: {
     color: colors.error,
   },
-  vaccineStatusSoon: {
-    color: colors.warning,
+  vaccineBadgeTextSoon: {
+    color: colors.accentDark,
   },
-  vaccineText: {
-    fontSize: 14,
+  vaccineComplete: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+  },
+  vaccineCompleteText: {
+    ...typography.bodyMedium,
     color: colors.success,
-    textAlign: 'center',
+    fontWeight: '500',
   },
 });

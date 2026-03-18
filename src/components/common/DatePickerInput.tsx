@@ -1,12 +1,14 @@
 import React, { useState } from 'react';
 import { View, Text, TextInput, StyleSheet, Modal, Pressable, Platform } from 'react-native';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../constants/colors';
+import { typography } from '../../constants/typography';
 import { format, parse, isValid } from 'date-fns';
 import { vi } from 'date-fns/locale';
 
 interface DatePickerInputProps {
   label: string;
-  value: string; // ISO date string
+  value: string;
   onChange: (date: string) => void;
   placeholder?: string;
 }
@@ -33,7 +35,6 @@ export function DatePickerInput({ label, value, onChange, placeholder = 'Chọn 
 
   const handleInputChange = (text: string) => {
     setInputValue(text);
-    // Try to parse the input
     const parsed = parse(text, 'dd/MM/yyyy HH:mm', new Date());
     if (isValid(parsed)) {
       onChange(parsed.toISOString());
@@ -42,18 +43,20 @@ export function DatePickerInput({ label, value, onChange, placeholder = 'Chọn 
 
   return (
     <View style={styles.container}>
-      <Text style={styles.label}>{label}</Text>
-      <Pressable onPress={handleOpenPicker} style={styles.inputContainer}>
+      {label && <Text style={styles.label}>{label}</Text>}
+      <Pressable onPress={handleOpenPicker} style={({ pressed }) => [
+        styles.inputContainer,
+        pressed && styles.inputContainerPressed,
+      ]}>
         <TextInput
           style={styles.input}
           value={inputValue}
-          onChangeText={handleInputChange}
           placeholder={placeholder}
           placeholderTextColor={colors.textMuted}
           editable={false}
           onPressIn={handleOpenPicker}
         />
-        <Text style={styles.icon}>📅</Text>
+        <Ionicons name="calendar-outline" size={20} color={colors.textMuted} />
       </Pressable>
 
       <Modal
@@ -67,11 +70,20 @@ export function DatePickerInput({ label, value, onChange, placeholder = 'Chọn 
             <Text style={styles.modalTitle}>Chọn ngày giờ</Text>
 
             <View style={styles.quickDates}>
-              <Pressable style={styles.quickDateBtn} onPress={() => setTempDate(new Date().toISOString())}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.quickDateBtn,
+                  pressed && styles.quickDateBtnPressed,
+                ]}
+                onPress={() => setTempDate(new Date().toISOString())}
+              >
                 <Text style={styles.quickDateText}>Bây giờ</Text>
               </Pressable>
               <Pressable
-                style={styles.quickDateBtn}
+                style={({ pressed }) => [
+                  styles.quickDateBtn,
+                  pressed && styles.quickDateBtnPressed,
+                ]}
                 onPress={() => {
                   const yesterday = new Date();
                   yesterday.setDate(yesterday.getDate() - 1);
@@ -159,16 +171,29 @@ export function DatePickerInput({ label, value, onChange, placeholder = 'Chọn 
             </View>
 
             <View style={styles.preview}>
+              <Ionicons name="calendar" size={18} color={colors.primary} style={styles.previewIcon} />
               <Text style={styles.previewText}>
-                📅 {format(new Date(tempDate), 'EEEE, dd MMMM yyyy, HH:mm', { locale: vi })}
+                {format(new Date(tempDate), 'EEEE, dd MMMM yyyy, HH:mm', { locale: vi })}
               </Text>
             </View>
 
             <View style={styles.modalButtons}>
-              <Pressable style={styles.cancelBtn} onPress={handleCancel}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.cancelBtn,
+                  pressed && styles.cancelBtnPressed,
+                ]}
+                onPress={handleCancel}
+              >
                 <Text style={styles.cancelText}>Hủy</Text>
               </Pressable>
-              <Pressable style={styles.confirmBtn} onPress={handleConfirm}>
+              <Pressable
+                style={({ pressed }) => [
+                  styles.confirmBtn,
+                  pressed && styles.confirmBtnPressed,
+                ]}
+                onPress={handleConfirm}
+              >
                 <Text style={styles.confirmText}>Xác nhận</Text>
               </Pressable>
             </View>
@@ -181,10 +206,10 @@ export function DatePickerInput({ label, value, onChange, placeholder = 'Chọn 
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    ...typography.bodySmall,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 8,
@@ -192,20 +217,20 @@ const styles = StyleSheet.create({
   inputContainer: {
     flexDirection: 'row',
     alignItems: 'center',
-    backgroundColor: colors.background,
-    borderRadius: 8,
-    borderWidth: 1,
+    backgroundColor: colors.surface,
+    borderRadius: 14,
+    borderWidth: 1.5,
     borderColor: colors.border,
-    paddingHorizontal: 12,
+    paddingHorizontal: 16,
+  },
+  inputContainerPressed: {
+    borderColor: colors.primary,
   },
   input: {
     flex: 1,
-    paddingVertical: 12,
+    paddingVertical: 14,
     fontSize: 16,
     color: colors.text,
-  },
-  icon: {
-    fontSize: 20,
   },
   modalOverlay: {
     flex: 1,
@@ -214,30 +239,33 @@ const styles = StyleSheet.create({
   },
   modalContent: {
     backgroundColor: colors.surface,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
+    borderTopLeftRadius: 28,
+    borderTopRightRadius: 28,
     padding: 24,
     paddingBottom: Platform.OS === 'ios' ? 40 : 24,
   },
   modalTitle: {
-    fontSize: 20,
-    fontWeight: '700',
+    ...typography.headline,
     textAlign: 'center',
-    marginBottom: 20,
+    marginBottom: 24,
   },
   quickDates: {
     flexDirection: 'row',
     justifyContent: 'center',
     gap: 12,
-    marginBottom: 20,
+    marginBottom: 24,
   },
   quickDateBtn: {
-    paddingHorizontal: 16,
-    paddingVertical: 8,
-    backgroundColor: colors.primaryLight,
+    paddingHorizontal: 20,
+    paddingVertical: 10,
+    backgroundColor: colors.primaryLight + '30',
     borderRadius: 20,
   },
+  quickDateBtnPressed: {
+    opacity: 0.8,
+  },
   quickDateText: {
+    ...typography.bodySmall,
     color: colors.primary,
     fontWeight: '600',
   },
@@ -251,31 +279,39 @@ const styles = StyleSheet.create({
     alignItems: 'center',
   },
   inputLabel: {
-    fontSize: 12,
+    ...typography.labelSmall,
     color: colors.textMuted,
-    marginBottom: 4,
+    marginBottom: 6,
   },
   dateInput: {
-    width: 60,
-    height: 44,
+    width: 64,
+    height: 48,
     backgroundColor: colors.background,
-    borderRadius: 8,
+    borderRadius: 12,
     textAlign: 'center',
     fontSize: 18,
     fontWeight: '600',
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
+    color: colors.text,
   },
   preview: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
     backgroundColor: colors.background,
     padding: 16,
-    borderRadius: 12,
-    marginBottom: 20,
+    borderRadius: 14,
+    marginBottom: 24,
+    gap: 8,
+  },
+  previewIcon: {
+    marginRight: 2,
   },
   previewText: {
-    textAlign: 'center',
-    fontSize: 16,
+    ...typography.bodyMedium,
     color: colors.text,
+    textAlign: 'center',
   },
   modalButtons: {
     flexDirection: 'row',
@@ -284,25 +320,30 @@ const styles = StyleSheet.create({
   cancelBtn: {
     flex: 1,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     backgroundColor: colors.background,
     alignItems: 'center',
   },
+  cancelBtnPressed: {
+    opacity: 0.8,
+  },
   cancelText: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.button,
     color: colors.textMuted,
   },
   confirmBtn: {
     flex: 1,
     padding: 16,
-    borderRadius: 12,
+    borderRadius: 14,
     backgroundColor: colors.primary,
     alignItems: 'center',
   },
+  confirmBtnPressed: {
+    opacity: 0.85,
+    transform: [{ scale: 0.98 }],
+  },
   confirmText: {
-    fontSize: 16,
-    fontWeight: '600',
+    ...typography.button,
     color: colors.white,
   },
 });

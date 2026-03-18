@@ -1,24 +1,26 @@
 import React from 'react';
 import { Tabs } from 'expo-router';
+import { Ionicons } from '@expo/vector-icons';
 import { colors } from '../../src/constants/colors';
-import { View, Text, StyleSheet, Platform } from 'react-native';
+import { Platform, View, Text, StyleSheet } from 'react-native';
 
 function TabIcon({ name, focused, isCenter }: { name: string; focused: boolean; isCenter?: boolean }) {
-  const icons: Record<string, string> = {
-    index: '🏠',
-    tracking: '📊',
-    moments: '📸',
-    chat: '💬',
-    profile: '👤',
+  const icons: Record<string, { outline: string; filled: string }> = {
+    index: { outline: 'home-outline', filled: 'home' },
+    tracking: { outline: 'analytics-outline', filled: 'analytics' },
+    moments: { outline: 'camera-outline', filled: 'camera' },
+    chat: { outline: 'chatbubbles-outline', filled: 'chatbubbles' },
+    profile: { outline: 'person-outline', filled: 'person' },
   };
 
-  const size = isCenter ? 28 : 22;
+  const icon = focused ? icons[name]?.filled : icons[name]?.outline;
+  const size = isCenter ? 26 : 22;
 
   if (isCenter) {
     return (
       <View style={styles.centerIconContainer}>
         <View style={styles.centerIconBg}>
-          <Text style={styles.centerIconText}>📸</Text>
+          <Ionicons name="camera" size={24} color={colors.white} />
         </View>
       </View>
     );
@@ -26,9 +28,13 @@ function TabIcon({ name, focused, isCenter }: { name: string; focused: boolean; 
 
   return (
     <View style={styles.tabIcon}>
-      <Text style={[styles.icon, focused && styles.iconFocused]}>
-        {icons[name] || '•'}
-      </Text>
+      {icon && (
+        <Ionicons
+          name={icon as any}
+          size={size}
+          color={focused ? colors.primary : colors.textMuted}
+        />
+      )}
     </View>
   );
 }
@@ -47,7 +53,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: 'Home',
+          title: 'Trang chủ',
           tabBarIcon: ({ focused }) => <TabIcon name="index" focused={focused} />,
         }}
       />
@@ -68,7 +74,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name="chat"
         options={{
-          title: 'Chat',
+          title: 'Tin nhắn',
           tabBarIcon: ({ focused }) => <TabIcon name="chat" focused={focused} />,
         }}
       />
@@ -87,14 +93,14 @@ const styles = StyleSheet.create({
   tabBar: {
     backgroundColor: colors.surface,
     borderTopColor: colors.border,
-    height: Platform.OS === 'ios' ? 85 : 70,
-    paddingTop: 8,
-    paddingBottom: Platform.OS === 'ios' ? 30 : 15,
+    height: Platform.OS === 'ios' ? 88 : 70,
+    paddingTop: 10,
+    paddingBottom: Platform.OS === 'ios' ? 34 : 18,
     elevation: 8,
-    shadowColor: '#000',
+    shadowColor: colors.black,
     shadowOffset: { width: 0, height: -2 },
-    shadowOpacity: 0.1,
-    shadowRadius: 4,
+    shadowOpacity: 0.06,
+    shadowRadius: 12,
   },
   tabLabel: {
     fontSize: 11,
@@ -106,34 +112,24 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
     paddingTop: 4,
   },
-  icon: {
-    fontSize: 22,
-    opacity: 0.6,
-  },
-  iconFocused: {
-    opacity: 1,
-  },
   centerIconContainer: {
     alignItems: 'center',
     justifyContent: 'center',
-    marginTop: -15,
+    marginTop: -18,
   },
   centerIconBg: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
+    width: 54,
+    height: 54,
+    borderRadius: 27,
     backgroundColor: colors.primary,
     alignItems: 'center',
     justifyContent: 'center',
     shadowColor: colors.primary,
     shadowOffset: { width: 0, height: 4 },
-    shadowOpacity: 0.4,
-    shadowRadius: 8,
+    shadowOpacity: 0.35,
+    shadowRadius: 10,
     elevation: 8,
-    borderWidth: 3,
+    borderWidth: 3.5,
     borderColor: colors.surface,
-  },
-  centerIconText: {
-    fontSize: 26,
   },
 });

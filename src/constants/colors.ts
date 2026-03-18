@@ -1,33 +1,42 @@
+// Premium color palette - Warm terracotta + sage + gold
 export const colors = {
-  primary: '#FF6B9D',
-  primaryLight: '#FFB8D0',
-  primaryDark: '#E84A7F',
+  // Primary: Warm terracotta rose - sophisticated & inviting
+  primary: '#E07A5F',
+  primaryLight: '#F4A499',
+  primaryDark: '#C45B3E',
 
-  secondary: '#7C4DFF',
-  secondaryLight: '#B47CFF',
-  secondaryDark: '#5C35CC',
+  // Secondary: Deep sage - nature/baby friendly
+  secondary: '#81B29A',
+  secondaryLight: '#A8D5BA',
+  secondaryDark: '#5F8C72',
 
-  accent: '#00D9A5',
-  accentLight: '#5FFFCF',
-  accentDark: '#00B087',
+  // Accent: Warm gold for highlights
+  accent: '#F2CC8F',
+  accentLight: '#F7DFB3',
+  accentDark: '#D4A85A',
 
-  background: '#FFF8FA',
+  // Neutrals: Warm charcoal instead of cold gray
+  background: '#FAF9F7',      // Warm off-white
   surface: '#FFFFFF',
+  surfaceElevated: '#FEFEFE',
 
-  text: '#2D3436',
-  textLight: '#636E72',
-  textMuted: '#B2BEC3',
+  // Text: Deep navy-charcoal
+  text: '#3D405B',
+  textLight: '#6B6E7B',
+  textMuted: '#A9A9B8',
 
-  error: '#FF6B6B',
-  warning: '#FDCB6E',
-  success: '#00D9A5',
-  info: '#74B9FF',
+  // Semantic - using color family
+  error: '#E07A5F',
+  warning: '#F2CC8F',
+  success: '#81B29A',
+  info: '#7E9CC7',
 
-  border: '#E8E8E8',
-  divider: '#F0F0F0',
+  // Borders - warmer tones
+  border: '#E8E6E3',
+  divider: '#F0EFED',
 
   white: '#FFFFFF',
-  black: '#000000',
+  black: '#1A1A1A',
   transparent: 'transparent',
 };
 

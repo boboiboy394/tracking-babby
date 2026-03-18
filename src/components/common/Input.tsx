@@ -8,16 +8,19 @@ import {
   TextInputProps,
 } from 'react-native';
 import { colors } from '../../constants/colors';
+import { typography } from '../../constants/typography';
 
 interface InputProps extends TextInputProps {
   label?: string;
   error?: string;
+  helper?: string;
   containerStyle?: ViewStyle;
 }
 
 export const Input: React.FC<InputProps> = ({
   label,
   error,
+  helper,
   containerStyle,
   ...props
 }) => {
@@ -33,30 +36,37 @@ export const Input: React.FC<InputProps> = ({
           error && styles.inputError,
         ]}
         placeholderTextColor={colors.textMuted}
-        onFocus={() => setIsFocused(true)}
-        onBlur={() => setIsFocused(false)}
+        onFocus={(e) => {
+          setIsFocused(true);
+          props.onFocus?.(e);
+        }}
+        onBlur={(e) => {
+          setIsFocused(false);
+          props.onBlur?.(e);
+        }}
         {...props}
       />
       {error && <Text style={styles.error}>{error}</Text>}
+      {!error && helper && <Text style={styles.helper}>{helper}</Text>}
     </View>
   );
 };
 
 const styles = StyleSheet.create({
   container: {
-    marginBottom: 16,
+    marginBottom: 20,
   },
   label: {
-    fontSize: 14,
+    ...typography.bodySmall,
     fontWeight: '600',
     color: colors.text,
     marginBottom: 8,
   },
   input: {
     backgroundColor: colors.surface,
-    borderWidth: 1,
+    borderWidth: 1.5,
     borderColor: colors.border,
-    borderRadius: 12,
+    borderRadius: 14,
     paddingVertical: 14,
     paddingHorizontal: 16,
     fontSize: 16,
@@ -64,13 +74,20 @@ const styles = StyleSheet.create({
   },
   inputFocused: {
     borderColor: colors.primary,
+    backgroundColor: colors.surfaceElevated,
   },
   inputError: {
     borderColor: colors.error,
   },
   error: {
-    fontSize: 12,
+    ...typography.bodySmall,
     color: colors.error,
-    marginTop: 4,
+    marginTop: 6,
+    fontWeight: '500',
+  },
+  helper: {
+    ...typography.bodySmall,
+    color: colors.textMuted,
+    marginTop: 6,
   },
 });
